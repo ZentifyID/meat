@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumbs">
+    <a href="{% url 'home' %}">Главная</a> /
+    <a href="{% url 'products' %}">Продукция</a> /
+    <span>{{ product.category.name }}</span> /
+    <span>{{ product.name }}</span>
+</div>
+
+<div class="section product-detail">
+    <div class="product-detail-grid">
+        <div>
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-detail-image">
+            {% endif %}
+        </div>
+
+        <div>
+            <h2>{{ product.name }}</h2>
+            <p><strong>Категория:</strong> {{ product.category.name }}</p>
+            <p>{{ product.description }}</p>
+            <p class="price">{{ product.price }} ₽</p>
+
+            {% if product.available %}
+                <p class="available">В наличии</p>
+            {% else %}
+                <p class="not-available">Нет в наличии</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if similar_products %}
+<div class="section">
+    <h3>Похожие товары</h3>
+
+    <div class="products">
+        {% for item in similar_products %}
+            <div class="product-card">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                {% endif %}
+
+                <h3>{{ item.name }}</h3>
+                <p>{{ item.description|truncatewords:10 }}</p>
+                <p class="price">{{ item.price }} ₽</p>
+                <a href="{{ item.get_absolute_url }}" class="btn">Подробнее</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

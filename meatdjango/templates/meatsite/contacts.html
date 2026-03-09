@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Контакты{% endblock %}
+
+{% block content %}
+
+<section class="section">
+    <h2>Контакты</h2>
+
+    <p>
+        Вы можете связаться с нами по телефону или электронной почте.
+        Мы всегда готовы ответить на ваши вопросы и обсудить сотрудничество.
+    </p>
+</section>
+
+
+<section class="section contact-grid">
+
+    <div>
+        <h3>Контактная информация</h3>
+
+        <p><strong>Телефон:</strong> +7 (900) 123-45-67</p>
+        <p><strong>Email:</strong> info@myasnoydvor.ru</p>
+        <p><strong>Адрес:</strong> г. Саратов, ул. Производственная, 12</p>
+        <p><strong>Время работы:</strong> Пн-Пт 9:00 — 18:00</p>
+    </div>
+
+
+    <div>
+        <h3>Как нас найти</h3>
+
+        <iframe
+            src="https://www.google.com/maps?q=Саратов&output=embed"
+            width="100%"
+            height="300"
+            style="border:0; border-radius:10px;"
+            loading="lazy">
+        </iframe>
+    </div>
+
+</section>
+
+
+<section class="section">
+    <h3>Обратная связь</h3>
+
+    <p>
+        Если у вас есть вопросы по нашей продукции или вы хотите обсудить сотрудничество,
+        пожалуйста, свяжитесь с нами по указанным контактам.
+    </p>
+</section>
+
+{% endblock %}

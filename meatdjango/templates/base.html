@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Мясопродукты{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<header>
+    <div class="container header-row">
+        <h1 class="logo">Мясной Двор</h1>
+
+        <nav>
+            <a href="{% url 'home' %}">Главная</a>
+            <a href="{% url 'products' %}">Продукция</a>
+            <a href="{% url 'about' %}">О компании</a>
+            <a href="{% url 'contacts' %}">Контакты</a>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</main>
+
+<footer>
+    <div class="container footer-grid">
+        <div>
+            <h4>Мясной Двор</h4>
+            <p>Качественная мясная продукция собственного производства.</p>
+        </div>
+
+        <div>
+            <h4>Навигация</h4>
+            <p><a href="{% url 'home' %}">Главная</a></p>
+            <p><a href="{% url 'products' %}">Продукция</a></p>
+            <p><a href="{% url 'about' %}">О компании</a></p>
+            <p><a href="{% url 'contacts' %}">Контакты</a></p>
+        </div>
+
+        <div>
+            <h4>Контакты</h4>
+            <p>+7 (900) 123-45-67</p>
+            <p>info@myasnoydvor.ru</p>
+            <p>г. Саратов, ул. Производственная, 12</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>

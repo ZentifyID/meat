@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+
+<section class="section hero">
+    <h2>Качественные мясопродукты для вашего стола</h2>
+    <p>
+        Компания «Мясной Двор» занимается производством мясной продукции,
+        сочетая современные технологии, контроль качества и традиционный подход.
+    </p>
+    <a href="{% url 'products' %}" class="btn">Смотреть продукцию</a>
+</section>
+
+<section class="section">
+    <h3>О компании</h3>
+    <p>
+        Мы работаем на рынке мясной продукции более 15 лет и уделяем особое внимание
+        качеству сырья, санитарным стандартам и стабильности поставок.
+    </p>
+</section>
+
+<section class="section production">
+    <div class="production-grid">
+        <div>
+            <h3>Наше производство</h3>
+            <p>
+                Производственные линии предприятия оснащены современным оборудованием,
+                позволяющим соблюдать технологические нормы на каждом этапе.
+            </p>
+            <p>
+                Мы контролируем качество сырья, соблюдаем санитарные требования
+                и обеспечиваем стабильный выпуск продукции для розничных и оптовых клиентов.
+            </p>
+        </div>
+
+        <div>
+            <img src="{% static 'img/production.jpg' %}" alt="Наше производство" class="production-image">
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <h3>Наши преимущества</h3>
+
+    <div class="features">
+        <div class="card">
+            <h4>Натуральное сырьё</h4>
+            <p>Используем качественные ингредиенты и проверенное мясное сырьё.</p>
+        </div>
+
+        <div class="card">
+            <h4>Контроль качества</h4>
+            <p>Каждая партия проходит проверку перед отправкой клиентам.</p>
+        </div>
+
+        <div class="card">
+            <h4>Современное производство</h4>
+            <p>Автоматизированные линии и соблюдение технологических норм.</p>
+        </div>
+
+        <div class="card">
+            <h4>Стабильные поставки</h4>
+            <p>Надёжная логистика и работа с постоянными партнёрами.</p>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <h3>Наши партнёры</h3>
+
+    <div class="partners-grid">
+        <div class="card partner">
+            <img src="{% static 'img/partners/partner1.png' %}" alt="KFC">
+            <span>KFC</span>
+        </div>
+
+        <div class="card partner">
+            <img src="{% static 'img/partners/partner2.png' %}" alt="Los Pollos Hermanos">
+            <span>Los Pollos Hermanos</span>
+        </div>
+
+        <div class="card partner">
+            <img src="{% static 'img/partners/partner3.png' %}" alt="McDonald’s">
+            <span>McDonald’s</span>
+        </div>
+
+        <div class="card partner">
+            <img src="{% static 'img/partners/partner4.png' %}" alt="Microsoft">
+            <span>Microsoft</span>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
