@@ -27,6 +27,7 @@
 
             {% if product.available %}
                 <p class="available">В наличии</p>
+                <a href="{% url 'add_to_cart' product.id %}" class="btn">Добавить в корзину</a>
             {% else %}
                 <p class="not-available">Нет в наличии</p>
             {% endif %}

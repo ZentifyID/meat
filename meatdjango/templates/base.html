@@ -3,8 +3,9 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Мясопродукты{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260312-03">
 </head>
 <body>
 
@@ -18,6 +19,13 @@
             <a href="{% url 'about' %}">О компании</a>
             <a href="{% url 'contacts' %}">Контакты</a>
         </nav>
+
+        <a href="{% url 'cart_detail' %}" class="cart-icon">
+            🛒
+            {% if cart_count > 0 %}
+                <span class="cart-count">{{ cart_count }}</span>
+            {% endif %}
+        </a>
     </div>
 </header>
 

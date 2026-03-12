@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}Заказ оформлен{% endblock %}
+
+{% block content %}
+
+<section class="section">
+    <h2>Заказ успешно оформлен</h2>
+    <p>Спасибо за заказ. В учебном проекте оплата имитируется, поэтому заказ считается успешно оплаченным.</p>
+    <a href="{% url 'products' %}" class="btn">Вернуться к покупкам</a>
+</section>
+
+{% endblock %}

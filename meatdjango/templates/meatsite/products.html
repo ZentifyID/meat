@@ -48,6 +48,7 @@
                 <p class="not-available">Нет в наличии</p>
             {% endif %}
 
+            <a href="{% url 'add_to_cart' product.id %}" class="btn">В корзину</a>
             <a href="{{ product.get_absolute_url }}" class="btn">Подробнее</a>
         </div>
     {% empty %}

@@ -1,5 +1,6 @@
 from django.db import models
 from django.urls import reverse
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Category(models.Model):
@@ -30,3 +31,67 @@ class Product(models.Model):
 
     def get_absolute_url(self):
         return reverse("product_detail", kwargs={"slug": self.slug})
+
+
+class Order(models.Model):
+    full_name = models.CharField(max_length=200, verbose_name="ФИО")
+    phone = models.CharField(max_length=30, verbose_name="Телефон")
+    email = models.EmailField(blank=True, null=True, verbose_name="Email")
+    address = models.TextField(verbose_name="Адрес доставки")
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_paid = models.BooleanField(default=False, verbose_name="Оплачен")
+
+    def __str__(self):
+        return f"Заказ #{self.id} - {self.full_name}"
+
+    def get_total_price(self):
+        return sum(item.get_total_price() for item in self.items.all())
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.product.name} ({self.quantity})"
+
+    def get_total_price(self):
+        return self.product.price * self.quantity
+
+
+class Review(models.Model):
+    name = models.CharField(max_length=120)
+    city = models.CharField(max_length=120, blank=True)
+    rating = models.PositiveSmallIntegerField(
+        default=5,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+    )
+    text = models.TextField(max_length=1200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_published = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} ({self.rating}/5)"
+
+
+class News(models.Model):
+    title = models.CharField(max_length=220)
+    short_description = models.CharField(max_length=320, blank=True)
+    content = models.TextField(max_length=4000)
+    image = models.ImageField(upload_to="news/", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    published_at = models.DateTimeField(blank=True, null=True)
+    is_published = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-published_at", "-created_at"]
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        return reverse("news_detail", kwargs={"news_id": self.id})

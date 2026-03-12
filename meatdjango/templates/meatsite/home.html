@@ -94,4 +94,65 @@
     </div>
 </section>
 
+<section class="section" id="reviews">
+    <h3>Отзывы клиентов</h3>
+
+    {% if review_submitted %}
+        <p class="review-message">Спасибо! Отзыв отправлен и появится на сайте после модерации.</p>
+    {% endif %}
+
+    {% if reviews %}
+        <div class="reviews-grid">
+            {% for review in reviews %}
+                <article class="review-card">
+                    <div class="review-meta">
+                        <strong>{{ review.name }}</strong>
+                        {% if review.city %}
+                            <span>{{ review.city }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="review-rating">Оценка: {{ review.rating }}/5</p>
+                    <p class="review-text">{{ review.text }}</p>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Пока нет опубликованных отзывов. Будьте первым, кто оставит мнение о нашей продукции.</p>
+    {% endif %}
+
+    <div class="review-form-wrap">
+        <h4>Оставить отзыв</h4>
+        <form method="post" class="review-form">
+            {% csrf_token %}
+            {{ review_form.non_field_errors }}
+
+            <div class="form-row">
+                {{ review_form.name.label_tag }}
+                {{ review_form.name }}
+                {{ review_form.name.errors }}
+            </div>
+
+            <div class="form-row">
+                {{ review_form.city.label_tag }}
+                {{ review_form.city }}
+                {{ review_form.city.errors }}
+            </div>
+
+            <div class="form-row">
+                {{ review_form.rating.label_tag }}
+                {{ review_form.rating }}
+                {{ review_form.rating.errors }}
+            </div>
+
+            <div class="form-row">
+                {{ review_form.text.label_tag }}
+                {{ review_form.text }}
+                {{ review_form.text.errors }}
+            </div>
+
+            <button type="submit" class="btn">Отправить отзыв</button>
+        </form>
+    </div>
+</section>
+
 {% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Корзина{% endblock %}
+
+{% block content %}
+
+<section class="section">
+    <h2>Корзина</h2>
+
+    {% if cart_items %}
+        {% for item in cart_items %}
+            <div class="cart-item">
+                <div class="cart-item-info">
+                    {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-image">
+                    {% endif %}
+
+                    <div>
+                        <h3>{{ item.product.name }}</h3>
+                        <p>Цена за единицу: {{ item.product.price }} ₽</p>
+                        <p><strong>Итого: {{ item.item_total }} ₽</strong></p>
+                    </div>
+                </div>
+
+                <div class="cart-actions">
+                    <div class="quantity-controls">
+                        <a href="{% url 'cart_decrease' item.product.id %}" class="qty-btn">−</a>
+                        <span class="qty-number">{{ item.quantity }}</span>
+                        <a href="{% url 'cart_increase' item.product.id %}" class="qty-btn">+</a>
+                    </div>
+
+                    <a href="{% url 'remove_from_cart' item.product.id %}" class="remove-link">Удалить</a>
+                </div>
+            </div>
+        {% endfor %}
+
+        <div class="section">
+            <h3>Общая сумма: {{ total_price }} ₽</h3>
+            <a href="{% url 'checkout' %}" class="btn">Оформить заказ</a>
+        </div>
+    {% else %}
+        <p>Корзина пуста.</p>
+    {% endif %}
+</section>
+
+{% endblock %}

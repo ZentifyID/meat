@@ -76,4 +76,36 @@
 
 </section>
 
+<section class="section">
+    <h3>Новости компании</h3>
+
+    {% if news_items %}
+        <div class="news-grid">
+            {% for item in news_items %}
+                <article class="news-card">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.title }}" class="news-image">
+                    {% endif %}
+                    <h4>{{ item.title }}</h4>
+                    {% if item.short_description %}
+                        <p>{{ item.short_description }}</p>
+                    {% else %}
+                        <p>{{ item.content|truncatewords:35 }}</p>
+                    {% endif %}
+                    <p class="news-date">
+                        {% if item.published_at %}
+                            {{ item.published_at|date:"d.m.Y" }}
+                        {% else %}
+                            {{ item.created_at|date:"d.m.Y" }}
+                        {% endif %}
+                    </p>
+                    <a href="{{ item.get_absolute_url }}" class="btn news-read-more">Читать полностью</a>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Новости пока не добавлены.</p>
+    {% endif %}
+</section>
+
 {% endblock %}
