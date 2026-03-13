@@ -1,11 +1,18 @@
-from django.shortcuts import render, redirect, get_object_or_404
+﻿from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .forms import ReviewForm
-from .models import Product, Category, Order, OrderItem, Review, News
+from .forms import RegisterForm, ReviewForm
+from .models import Category, News, Order, OrderItem, Product, Review
+
 
 def home(request):
-    review_form = ReviewForm()
+    initial = {}
+    if request.user.is_authenticated:
+        initial["name"] = request.user.get_full_name() or request.user.username
+
+    review_form = ReviewForm(initial=initial)
     review_submitted = request.GET.get("review_submitted") == "1"
 
     if request.method == "POST":
@@ -13,16 +20,56 @@ def home(request):
         if review_form.is_valid():
             review = review_form.save(commit=False)
             review.is_published = False
+            if request.user.is_authenticated:
+                review.user = request.user
             review.save()
             return redirect(f"{reverse('home')}?review_submitted=1#reviews")
 
     reviews = Review.objects.filter(is_published=True)[:6]
 
-    return render(request, "meatsite/home.html", {
-        "reviews": reviews,
-        "review_form": review_form,
-        "review_submitted": review_submitted,
-    })
+    return render(
+        request,
+        "meatsite/home.html",
+        {
+            "reviews": reviews,
+            "review_form": review_form,
+            "review_submitted": review_submitted,
+        },
+    )
+
+
+def register(request):
+    if request.user.is_authenticated:
+        return redirect("profile")
+
+    form = RegisterForm()
+    if request.method == "POST":
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("profile")
+
+    return render(request, "meatsite/register.html", {"form": form})
+
+
+@login_required
+def profile(request):
+    orders = (
+        Order.objects.filter(user=request.user)
+        .prefetch_related("items__product")
+        .order_by("-created_at")
+    )
+    reviews = Review.objects.filter(user=request.user).order_by("-created_at")
+
+    return render(
+        request,
+        "meatsite/profile.html",
+        {
+            "orders": orders,
+            "reviews": reviews,
+        },
+    )
 
 
 def about(request):
@@ -40,44 +87,46 @@ def contacts(request):
 
 
 def products(request):
-    products = Product.objects.select_related("category").all()
+    products_qs = Product.objects.select_related("category").all()
     categories = Category.objects.all()
 
     category_id = request.GET.get("category")
     query = request.GET.get("q", "").strip()
 
     if category_id:
-        products = products.filter(category_id=category_id)
+        products_qs = products_qs.filter(category_id=category_id)
 
-    products = list(products)
+    products_list = list(products_qs)
 
     if query:
         query_cf = query.casefold()
-        products = [
-            product for product in products
-            if query_cf in product.name.casefold()
-        ]
+        products_list = [product for product in products_list if query_cf in product.name.casefold()]
 
-    return render(request, "meatsite/products.html", {
-        "products": products,
-        "categories": categories,
-        "selected_category": category_id,
-        "search_query": query,
-    })
+    return render(
+        request,
+        "meatsite/products.html",
+        {
+            "products": products_list,
+            "categories": categories,
+            "selected_category": category_id,
+            "search_query": query,
+        },
+    )
 
 
 def product_detail(request, slug):
     product = get_object_or_404(Product.objects.select_related("category"), slug=slug)
 
-    similar_products = Product.objects.filter(
-        category=product.category,
-        available=True
-    ).exclude(id=product.id)[:3]
+    similar_products = Product.objects.filter(category=product.category, available=True).exclude(id=product.id)[:3]
 
-    return render(request, "meatsite/product_detail.html", {
-        "product": product,
-        "similar_products": similar_products,
-    })
+    return render(
+        request,
+        "meatsite/product_detail.html",
+        {
+            "product": product,
+            "similar_products": similar_products,
+        },
+    )
 
 
 def add_to_cart(request, product_id):
@@ -105,18 +154,24 @@ def cart_detail(request):
         quantity = item["quantity"]
         item_total = product.price * quantity
 
-        cart_items.append({
-            "product": product,
-            "quantity": quantity,
-            "item_total": item_total,
-        })
+        cart_items.append(
+            {
+                "product": product,
+                "quantity": quantity,
+                "item_total": item_total,
+            }
+        )
 
         total_price += item_total
 
-    return render(request, "meatsite/cart.html", {
-        "cart_items": cart_items,
-        "total_price": total_price,
-    })
+    return render(
+        request,
+        "meatsite/cart.html",
+        {
+            "cart_items": cart_items,
+            "total_price": total_price,
+        },
+    )
 
 
 def cart_increase(request, product_id):
@@ -168,11 +223,13 @@ def checkout(request):
         quantity = item["quantity"]
         item_total = product.price * quantity
 
-        cart_items.append({
-            "product": product,
-            "quantity": quantity,
-            "item_total": item_total,
-        })
+        cart_items.append(
+            {
+                "product": product,
+                "quantity": quantity,
+                "item_total": item_total,
+            }
+        )
 
         total_price += item_total
 
@@ -183,27 +240,32 @@ def checkout(request):
         address = request.POST.get("address")
 
         order = Order.objects.create(
+            user=request.user if request.user.is_authenticated else None,
             full_name=full_name,
             phone=phone,
             email=email,
             address=address,
-            is_paid=True
+            is_paid=True,
         )
 
         for item in cart_items:
             OrderItem.objects.create(
                 order=order,
                 product=item["product"],
-                quantity=item["quantity"]
+                quantity=item["quantity"],
             )
 
         request.session["cart"] = {}
         return redirect("order_success")
 
-    return render(request, "meatsite/checkout.html", {
-        "cart_items": cart_items,
-        "total_price": total_price,
-    })
+    return render(
+        request,
+        "meatsite/checkout.html",
+        {
+            "cart_items": cart_items,
+            "total_price": total_price,
+        },
+    )
 
 
 def order_success(request):

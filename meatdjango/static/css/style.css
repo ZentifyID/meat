@@ -88,6 +88,30 @@ nav a {
     transition: all 0.2s ease;
 }
 
+.inline-form {
+    display: inline;
+}
+
+.link-button {
+    padding: 8px 14px;
+    border-radius: 999px;
+    text-decoration: none;
+    color: #2a2a2a;
+    font-weight: 700;
+    font-size: 14px;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.link-button:hover {
+    border-color: #f3c6cf;
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
 nav a:hover {
     border-color: #f3c6cf;
     background: var(--accent-soft);
@@ -409,6 +433,20 @@ p {
     gap: 12px;
 }
 
+.auth-section {
+    max-width: 560px;
+    margin: 0 auto 24px;
+}
+
+.auth-form {
+    display: grid;
+    gap: 14px;
+}
+
+.auth-note {
+    margin-top: 14px;
+}
+
 .checkout-form textarea {
     min-height: 120px;
     resize: vertical;
@@ -652,6 +690,71 @@ p {
     border: 1px solid #c6e8d4;
     background: #edf9f1;
     color: #19653a;
+}
+
+.orders-list {
+    display: grid;
+    gap: 14px;
+    margin-top: 12px;
+}
+
+.order-card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: #fff;
+    padding: 16px;
+}
+
+.order-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.order-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    border: 1px solid transparent;
+}
+
+.status-processing {
+    color: #8a4f00;
+    background: #fff4dd;
+    border-color: #ffd48a;
+}
+
+.status-delivery {
+    color: #0b5799;
+    background: #e7f3ff;
+    border-color: #9ecaf7;
+}
+
+.status-completed {
+    color: #155f33;
+    background: #e8f7ee;
+    border-color: #a9dfbe;
+}
+
+.status-canceled {
+    color: #9d1428;
+    background: #fdecef;
+    border-color: #f5a8b5;
+}
+
+.order-meta {
+    color: var(--muted);
+    margin: 0 0 8px;
+}
+
+.order-items {
+    margin: 0;
+    padding-left: 18px;
 }
 
 .errorlist {

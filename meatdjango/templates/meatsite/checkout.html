@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 
 {% block title %}Оформление заказа{% endblock %}
 
@@ -10,9 +10,9 @@
     <form method="post" class="checkout-form">
         {% csrf_token %}
 
-        <input type="text" name="full_name" placeholder="Ваше имя" required>
+        <input type="text" name="full_name" placeholder="Ваше имя" value="{% if user.is_authenticated %}{{ user.get_full_name|default:user.username }}{% endif %}" required>
         <input type="text" name="phone" placeholder="Телефон" required>
-        <input type="email" name="email" placeholder="Email">
+        <input type="email" name="email" placeholder="Email" value="{% if user.is_authenticated %}{{ user.email }}{% endif %}">
         <textarea name="address" placeholder="Адрес доставки" required></textarea>
 
         <h3>Ваш заказ</h3>

@@ -1,6 +1,7 @@
+﻿from django.contrib.auth.models import User
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Category(models.Model):
@@ -23,7 +24,7 @@ class Product(models.Model):
         Category,
         on_delete=models.CASCADE,
         related_name="products",
-        verbose_name="Категория"
+        verbose_name="Категория",
     )
 
     def __str__(self):
@@ -34,18 +35,42 @@ class Product(models.Model):
 
 
 class Order(models.Model):
+    class Status(models.TextChoices):
+        PROCESSING = "processing", "В обработке"
+        DELIVERY = "delivery", "Доставка"
+        COMPLETED = "completed", "Выполнено"
+        CANCELED = "canceled", "Отменен"
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="orders",
+        null=True,
+        blank=True,
+        verbose_name="Пользователь",
+    )
     full_name = models.CharField(max_length=200, verbose_name="ФИО")
     phone = models.CharField(max_length=30, verbose_name="Телефон")
     email = models.EmailField(blank=True, null=True, verbose_name="Email")
     address = models.TextField(verbose_name="Адрес доставки")
     created_at = models.DateTimeField(auto_now_add=True)
     is_paid = models.BooleanField(default=False, verbose_name="Оплачен")
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PROCESSING,
+        verbose_name="Статус",
+    )
 
     def __str__(self):
         return f"Заказ #{self.id} - {self.full_name}"
 
     def get_total_price(self):
         return sum(item.get_total_price() for item in self.items.all())
+
+    @property
+    def status_css_class(self):
+        return f"status-{self.status}"
 
 
 class OrderItem(models.Model):
@@ -61,6 +86,14 @@ class OrderItem(models.Model):
 
 
 class Review(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="reviews",
+        null=True,
+        blank=True,
+        verbose_name="Пользователь",
+    )
     name = models.CharField(max_length=120)
     city = models.CharField(max_length=120, blank=True)
     rating = models.PositiveSmallIntegerField(
