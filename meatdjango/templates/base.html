@@ -33,7 +33,7 @@
         <a href="{% url 'cart_detail' %}" class="cart-icon" aria-label="Корзина">
             🛒
             {% if cart_count > 0 %}
-                <span class="cart-count">{{ cart_count }}</span>
+                <span class="cart-count" id="cart-count-badge">{{ cart_count }}</span>
             {% endif %}
         </a>
     </div>
@@ -68,6 +68,8 @@
         </div>
     </div>
 </footer>
+
+{% block extra_js %}{% endblock %}
 
 </body>
 </html>

@@ -1,61 +1,38 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Продукция{% endblock %}
 
 {% block content %}
-
 <section class="section">
     <h2>Наша продукция</h2>
 
-    <form method="get" class="filter-form">
+    <form id="products-filter-form" class="filter-form">
         <input
+            id="products-query"
             type="text"
             name="q"
             placeholder="Поиск по названию..."
-            value="{{ search_query|default:'' }}"
+            value=""
         >
 
-        <select name="category">
+        <select id="products-category" name="category">
             <option value="">Все категории</option>
-            {% for category in categories %}
-                <option value="{{ category.id }}"
-                    {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
-                    {{ category.name }}
-                </option>
-            {% endfor %}
         </select>
 
         <button type="submit" class="btn">Найти</button>
-        <a href="{% url 'products' %}" class="btn reset-btn">Сбросить</a>
+        <button type="reset" class="btn reset-btn">Сбросить</button>
     </form>
 </section>
 
-<div class="products">
-    {% for product in products %}
-        <div class="product-card">
-            {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}">
-            {% endif %}
+<div id="products-list" class="products"></div>
 
-            <h3>{{ product.name }}</h3>
-            <p>{{ product.description|truncatewords:12 }}</p>
-            <p><strong>Категория:</strong> {{ product.category.name }}</p>
-            <p class="price">{{ product.price }} ₽</p>
-
-            {% if product.available %}
-                <p class="available">В наличии</p>
-            {% else %}
-                <p class="not-available">Нет в наличии</p>
-            {% endif %}
-
-            <a href="{% url 'add_to_cart' product.id %}" class="btn">В корзину</a>
-            <a href="{{ product.get_absolute_url }}" class="btn">Подробнее</a>
-        </div>
-    {% empty %}
-        <div class="section">
-            <p>По вашему запросу ничего не найдено.</p>
-        </div>
-    {% endfor %}
+<div id="products-empty" class="section" hidden>
+    <p>По вашему запросу ничего не найдено.</p>
 </div>
+{% endblock %}
 
+{% block extra_js %}
+<script src="{% static 'js/api-client.js' %}"></script>
+<script src="{% static 'js/products.js' %}"></script>
 {% endblock %}

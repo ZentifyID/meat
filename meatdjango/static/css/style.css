@@ -525,6 +525,8 @@ p {
     border-radius: 8px;
     font-size: 20px;
     line-height: 1;
+    border: none;
+    cursor: pointer;
 }
 
 .qty-btn:hover {
@@ -541,6 +543,10 @@ p {
     color: #777;
     text-decoration: none;
     font-size: 14px;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
 }
 
 .remove-link:hover {
