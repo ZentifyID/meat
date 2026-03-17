@@ -258,13 +258,16 @@ p {
 }
 
 .partner img {
+    display: block;
     width: 90px;
     height: 90px;
     object-fit: contain;
-    margin-bottom: 10px;
+    margin: 0 auto 8px;
 }
 
 .partner span {
+    display: block;
+    margin-top: 4px;
     font-weight: 700;
     color: #353535;
 }
@@ -696,6 +699,15 @@ p {
     border: 1px solid #c6e8d4;
     background: #edf9f1;
     color: #19653a;
+}
+
+.review-error-message {
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #f5a8b5;
+    background: #fdecef;
+    color: #9d1428;
 }
 
 .orders-list {

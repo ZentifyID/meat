@@ -1,11 +1,13 @@
 ﻿import json
 from decimal import Decimal
+from functools import wraps
 
-from django.contrib.auth import login
+from django.contrib.auth import authenticate, login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
 
@@ -13,79 +15,49 @@ from .forms import RegisterForm, ReviewForm
 from .models import Category, News, Order, OrderItem, Product, Review
 
 
+@ensure_csrf_cookie
 def home(request):
-    initial = {}
+    review_author_name = ""
     if request.user.is_authenticated:
-        initial["name"] = request.user.get_full_name() or request.user.username
-
-    review_form = ReviewForm(initial=initial)
-    review_submitted = request.GET.get("review_submitted") == "1"
-
-    if request.method == "POST":
-        review_form = ReviewForm(request.POST)
-        if review_form.is_valid():
-            review = review_form.save(commit=False)
-            review.is_published = False
-            if request.user.is_authenticated:
-                review.user = request.user
-            review.save()
-            return redirect(f"{reverse('home')}?review_submitted=1#reviews")
-
-    reviews = Review.objects.filter(is_published=True)[:6]
+        review_author_name = request.user.get_full_name() or request.user.username
 
     return render(
         request,
         "meatsite/home.html",
         {
-            "reviews": reviews,
-            "review_form": review_form,
-            "review_submitted": review_submitted,
+            "review_author_name": review_author_name,
         },
     )
 
 
+@ensure_csrf_cookie
 def register(request):
     if request.user.is_authenticated:
         return redirect("profile")
 
-    form = RegisterForm()
-    if request.method == "POST":
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect("profile")
+    return render(request, "meatsite/register.html")
 
-    return render(request, "meatsite/register.html", {"form": form})
+
+@ensure_csrf_cookie
+def login_page(request):
+    if request.user.is_authenticated:
+        return redirect("profile")
+
+    return render(request, "meatsite/login.html")
 
 
 @login_required
+@ensure_csrf_cookie
 def profile(request):
-    orders = (
-        Order.objects.filter(user=request.user)
-        .prefetch_related("items__product")
-        .order_by("-created_at")
-    )
-    reviews = Review.objects.filter(user=request.user).order_by("-created_at")
-
-    return render(
-        request,
-        "meatsite/profile.html",
-        {
-            "orders": orders,
-            "reviews": reviews,
-        },
-    )
+    return render(request, "meatsite/profile.html")
 
 
 def about(request):
-    news_items = News.objects.filter(is_published=True)[:12]
-    return render(request, "meatsite/about.html", {"news_items": news_items})
+    return render(request, "meatsite/about.html")
 
 
 def news_detail(request, news_id):
-    news_item = get_object_or_404(News, id=news_id, is_published=True)
-    return render(request, "meatsite/news_detail.html", {"news_item": news_item})
+    return render(request, "meatsite/news_detail.html", {"news_id": news_id})
 
 
 def contacts(request):
@@ -121,6 +93,7 @@ def products(request):
     )
 
 
+@ensure_csrf_cookie
 def product_detail(request, slug):
     product = get_object_or_404(Product.objects.select_related("category"), slug=slug)
 
@@ -134,22 +107,6 @@ def product_detail(request, slug):
             "similar_products": similar_products,
         },
     )
-
-
-@ensure_csrf_cookie
-def add_to_cart(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-
-    cart = request.session.get("cart", {})
-    product_id_str = str(product.id)
-
-    if product_id_str in cart:
-        cart[product_id_str]["quantity"] += 1
-    else:
-        cart[product_id_str] = {"quantity": 1}
-
-    request.session["cart"] = cart
-    return redirect(request.META.get("HTTP_REFERER", "products"))
 
 
 @ensure_csrf_cookie
@@ -181,41 +138,6 @@ def cart_detail(request):
             "total_price": total_price,
         },
     )
-
-
-def cart_increase(request, product_id):
-    cart = request.session.get("cart", {})
-    product_id_str = str(product_id)
-
-    if product_id_str in cart:
-        cart[product_id_str]["quantity"] += 1
-
-    request.session["cart"] = cart
-    return redirect("cart_detail")
-
-
-def cart_decrease(request, product_id):
-    cart = request.session.get("cart", {})
-    product_id_str = str(product_id)
-
-    if product_id_str in cart:
-        cart[product_id_str]["quantity"] -= 1
-        if cart[product_id_str]["quantity"] <= 0:
-            del cart[product_id_str]
-
-    request.session["cart"] = cart
-    return redirect("cart_detail")
-
-
-def remove_from_cart(request, product_id):
-    cart = request.session.get("cart", {})
-    product_id_str = str(product_id)
-
-    if product_id_str in cart:
-        del cart[product_id_str]
-
-    request.session["cart"] = cart
-    return redirect("cart_detail")
 
 
 @ensure_csrf_cookie
@@ -281,6 +203,95 @@ def checkout(request):
 def order_success(request):
     return render(request, "meatsite/order_success.html")
 
+
+def _api_login_required(view_func):
+    @wraps(view_func)
+    def wrapped(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return JsonResponse({"error": "Требуется авторизация"}, status=401)
+        return view_func(request, *args, **kwargs)
+
+    return wrapped
+
+
+def _serialize_order(order):
+    created_at_local = timezone.localtime(order.created_at)
+    items = []
+
+    for item in order.items.all():
+        items.append(
+            {
+                "product_id": item.product_id,
+                "product_name": item.product.name,
+                "quantity": item.quantity,
+                "item_total": str(item.get_total_price()),
+            }
+        )
+
+    return {
+        "id": order.id,
+        "created_at": created_at_local.isoformat(),
+        "created_at_display": created_at_local.strftime("%d.%m.%Y %H:%M"),
+        "status": order.status,
+        "status_display": order.get_status_display(),
+        "status_css_class": order.status_css_class,
+        "total_price": str(order.get_total_price()),
+        "items": items,
+    }
+
+
+def _serialize_review(review):
+    created_at_local = timezone.localtime(review.created_at)
+
+    return {
+        "id": review.id,
+        "rating": review.rating,
+        "text": review.text,
+        "is_published": review.is_published,
+        "created_at": created_at_local.isoformat(),
+        "created_at_display": created_at_local.strftime("%d.%m.%Y %H:%M"),
+    }
+
+
+def _serialize_public_review(review):
+    return {
+        "id": review.id,
+        "name": review.name,
+        "city": review.city,
+        "rating": review.rating,
+        "text": review.text,
+    }
+
+
+def _serialize_news_summary(news_item):
+    publication_dt = news_item.published_at or news_item.created_at
+    publication_dt_local = timezone.localtime(publication_dt)
+
+    return {
+        "id": news_item.id,
+        "title": news_item.title,
+        "short_description": news_item.short_description,
+        "preview_text": news_item.short_description or news_item.content[:280],
+        "image_url": news_item.image.url if news_item.image else "",
+        "published_at": publication_dt_local.isoformat(),
+        "published_at_display": publication_dt_local.strftime("%d.%m.%Y"),
+        "detail_url": reverse("news_detail", kwargs={"news_id": news_item.id}),
+    }
+
+
+def _serialize_news_detail(news_item):
+    publication_dt = news_item.published_at or news_item.created_at
+    publication_dt_local = timezone.localtime(publication_dt)
+
+    return {
+        "id": news_item.id,
+        "title": news_item.title,
+        "short_description": news_item.short_description,
+        "content": news_item.content,
+        "image_url": news_item.image.url if news_item.image else "",
+        "published_at": publication_dt_local.isoformat(),
+        "published_at_display": publication_dt_local.strftime("%d.%m.%Y %H:%M"),
+    }
 
 def _parse_request_json(request):
     try:
@@ -366,6 +377,209 @@ def _build_cart_payload(request):
         "total_price": str(total_price),
         "total_count": total_count,
     }
+
+
+@require_http_methods(["GET"])
+@ensure_csrf_cookie
+def api_auth_session(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"is_authenticated": False, "user": None})
+
+    return JsonResponse(
+        {
+            "is_authenticated": True,
+            "user": {
+                "id": request.user.id,
+                "username": request.user.username,
+                "full_name": request.user.get_full_name(),
+                "email": request.user.email,
+            },
+        }
+    )
+
+
+@require_http_methods(["POST"])
+def api_auth_register(request):
+    payload = _parse_request_json(request)
+    if payload is None:
+        return JsonResponse({"error": "Некорректный JSON"}, status=400)
+
+    form = RegisterForm(
+        {
+            "username": payload.get("username", ""),
+            "email": payload.get("email", ""),
+            "password1": payload.get("password1", ""),
+            "password2": payload.get("password2", ""),
+        }
+    )
+
+    if not form.is_valid():
+        return JsonResponse({"errors": form.errors}, status=400)
+
+    user = form.save()
+    login(request, user)
+
+    return JsonResponse(
+        {
+            "message": "Регистрация прошла успешно",
+            "redirect_url": reverse("profile"),
+        },
+        status=201,
+    )
+
+
+@require_http_methods(["POST"])
+def api_auth_login(request):
+    payload = _parse_request_json(request)
+    if payload is None:
+        return JsonResponse({"error": "Некорректный JSON"}, status=400)
+
+    username = str(payload.get("username", "")).strip()
+    password = str(payload.get("password", ""))
+
+    if not username or not password:
+        return JsonResponse({"error": "Заполните username и password"}, status=400)
+
+    user = authenticate(request, username=username, password=password)
+    if not user:
+        return JsonResponse({"error": "Неверный логин или пароль"}, status=400)
+
+    login(request, user)
+    return JsonResponse({"message": "Вход выполнен", "redirect_url": reverse("profile")})
+
+
+@require_http_methods(["POST"])
+def api_auth_logout(request):
+    if request.user.is_authenticated:
+        auth_logout(request)
+
+    return JsonResponse({"message": "Выход выполнен", "redirect_url": reverse("home")})
+
+
+@require_http_methods(["GET", "POST"])
+def api_reviews(request):
+    if request.method == "GET":
+        reviews = Review.objects.filter(is_published=True)[:6]
+        return JsonResponse({"results": [_serialize_public_review(review) for review in reviews]})
+
+    payload = _parse_request_json(request)
+    if payload is None:
+        return JsonResponse({"error": "Некорректный JSON"}, status=400)
+
+    review_data = {
+        "name": payload.get("name", ""),
+        "city": payload.get("city", ""),
+        "rating": payload.get("rating", ""),
+        "text": payload.get("text", ""),
+    }
+
+    if request.user.is_authenticated and not str(review_data["name"]).strip():
+        review_data["name"] = request.user.get_full_name() or request.user.username
+
+    review_form = ReviewForm(review_data)
+    if not review_form.is_valid():
+        return JsonResponse({"errors": review_form.errors}, status=400)
+
+    review = review_form.save(commit=False)
+    review.is_published = False
+    if request.user.is_authenticated:
+        review.user = request.user
+    review.save()
+
+    return JsonResponse(
+        {
+            "message": "Спасибо! Отзыв отправлен и появится на сайте после модерации.",
+            "review_id": review.id,
+        },
+        status=201,
+    )
+
+
+@require_http_methods(["GET"])
+def api_news(request):
+    try:
+        limit = min(max(int(request.GET.get("limit", 12)), 1), 50)
+    except (TypeError, ValueError):
+        limit = 12
+
+    try:
+        offset = max(int(request.GET.get("offset", 0)), 0)
+    except (TypeError, ValueError):
+        offset = 0
+
+    news_qs = News.objects.filter(is_published=True)
+    total = news_qs.count()
+    news_items = list(news_qs[offset : offset + limit])
+
+    return JsonResponse(
+        {
+            "results": [_serialize_news_summary(news_item) for news_item in news_items],
+            "pagination": {
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "has_next": offset + limit < total,
+            },
+        }
+    )
+
+
+@require_http_methods(["GET"])
+def api_news_detail(request, news_id):
+    news_item = News.objects.filter(id=news_id, is_published=True).first()
+    if not news_item:
+        return JsonResponse({"error": "Новость не найдена"}, status=404)
+
+    return JsonResponse({"news": _serialize_news_detail(news_item)})
+
+
+@require_http_methods(["GET"])
+@_api_login_required
+def api_profile(request):
+    user = request.user
+
+    return JsonResponse(
+        {
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "full_name": user.get_full_name(),
+                "email": user.email,
+            }
+        }
+    )
+
+
+@require_http_methods(["GET"])
+@_api_login_required
+def api_profile_orders(request):
+    orders = (
+        Order.objects.filter(user=request.user)
+        .prefetch_related("items__product")
+        .order_by("-created_at")
+    )
+
+    return JsonResponse({"results": [_serialize_order(order) for order in orders]})
+
+
+@require_http_methods(["GET"])
+@_api_login_required
+def api_profile_reviews(request):
+    reviews = Review.objects.filter(user=request.user).order_by("-created_at")
+
+    return JsonResponse({"results": [_serialize_review(review) for review in reviews]})
+
+
+@require_http_methods(["DELETE"])
+@_api_login_required
+def api_profile_delete_review(request, review_id):
+    review = Review.objects.filter(id=review_id, user=request.user).first()
+
+    if not review:
+        return JsonResponse({"error": "Отзыв не найден"}, status=404)
+
+    review.delete()
+    return JsonResponse({"message": "Отзыв удален"})
 
 
 @require_http_methods(["GET"])
@@ -518,3 +732,4 @@ def api_create_order(request):
         },
         status=201,
     )
+

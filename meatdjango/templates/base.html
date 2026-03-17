@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Мясопродукты{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260313-01">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260317-02">
 </head>
 <body>
 
@@ -20,10 +20,7 @@
             <a href="{% url 'contacts' %}">Контакты</a>
             {% if user.is_authenticated %}
                 <a href="{% url 'profile' %}">Профиль</a>
-                <form method="post" action="{% url 'logout' %}" class="inline-form">
-                    {% csrf_token %}
-                    <button type="submit" class="link-button">Выход</button>
-                </form>
+                <button type="button" class="link-button" id="nav-logout-button">Выход</button>
             {% else %}
                 <a href="{% url 'login' %}">Вход</a>
                 <a href="{% url 'register' %}">Регистрация</a>
@@ -70,6 +67,7 @@
 </footer>
 
 {% block extra_js %}{% endblock %}
+<script src="{% static 'js/auth-nav.js' %}"></script>
 
 </body>
 </html>

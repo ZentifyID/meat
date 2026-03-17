@@ -1,4 +1,5 @@
 ﻿{% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Регистрация{% endblock %}
 
@@ -6,32 +7,27 @@
 <section class="section auth-section">
     <h3>Регистрация</h3>
 
-    <form method="post" class="auth-form">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
+    <p id="register-error" class="review-error-message" hidden></p>
 
+    <form id="register-form" class="auth-form">
         <div class="form-row">
-            {{ form.username.label_tag }}
-            {{ form.username }}
-            {{ form.username.errors }}
+            <label for="register-username">Логин</label>
+            <input id="register-username" name="username" type="text" autocomplete="username" required>
         </div>
 
         <div class="form-row">
-            {{ form.email.label_tag }}
-            {{ form.email }}
-            {{ form.email.errors }}
+            <label for="register-email">Email</label>
+            <input id="register-email" name="email" type="email" autocomplete="email" required>
         </div>
 
         <div class="form-row">
-            {{ form.password1.label_tag }}
-            {{ form.password1 }}
-            {{ form.password1.errors }}
+            <label for="register-password1">Пароль</label>
+            <input id="register-password1" name="password1" type="password" autocomplete="new-password" required>
         </div>
 
         <div class="form-row">
-            {{ form.password2.label_tag }}
-            {{ form.password2 }}
-            {{ form.password2.errors }}
+            <label for="register-password2">Подтверждение пароля</label>
+            <input id="register-password2" name="password2" type="password" autocomplete="new-password" required>
         </div>
 
         <button type="submit" class="btn">Создать аккаунт</button>
@@ -39,4 +35,9 @@
 
     <p class="auth-note">Уже есть аккаунт? <a href="{% url 'login' %}">Войдите</a></p>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/api-client.js' %}"></script>
+<script src="{% static 'js/auth-register.js' %}"></script>
 {% endblock %}

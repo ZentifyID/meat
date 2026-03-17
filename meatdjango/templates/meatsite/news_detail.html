@@ -1,37 +1,33 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
+{% load static %}
 
-{% block title %}{{ news_item.title }}{% endblock %}
+{% block title %}Новость{% endblock %}
 
 {% block content %}
 
 <div class="breadcrumbs">
     <a href="{% url 'home' %}">Главная</a> /
     <a href="{% url 'about' %}">О компании</a> /
-    <span>{{ news_item.title }}</span>
+    <span id="news-detail-breadcrumb">Новость</span>
 </div>
 
-<section class="section news-detail">
-    <h2>{{ news_item.title }}</h2>
+<section class="section news-detail" id="news-detail-root" data-news-id="{{ news_id }}">
+    <h2 id="news-detail-title">Загрузка...</h2>
 
-    <p class="news-date">
-        {% if news_item.published_at %}
-            {{ news_item.published_at|date:"d.m.Y H:i" }}
-        {% else %}
-            {{ news_item.created_at|date:"d.m.Y H:i" }}
-        {% endif %}
-    </p>
+    <p class="news-date" id="news-detail-date"></p>
 
-    {% if news_item.image %}
-        <img src="{{ news_item.image.url }}" alt="{{ news_item.title }}" class="news-detail-image">
-    {% endif %}
+    <img id="news-detail-image" class="news-detail-image" alt="Изображение новости" hidden>
 
-    {% if news_item.short_description %}
-        <p class="news-lead">{{ news_item.short_description }}</p>
-    {% endif %}
+    <p class="news-lead" id="news-detail-lead" hidden></p>
 
-    <div class="news-content">
-        {{ news_item.content|linebreaks }}
-    </div>
+    <div class="news-content" id="news-detail-content"></div>
+
+    <p id="news-detail-error" class="review-error-message" hidden></p>
 </section>
 
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/api-client.js' %}"></script>
+<script src="{% static 'js/news-detail.js' %}"></script>
 {% endblock %}

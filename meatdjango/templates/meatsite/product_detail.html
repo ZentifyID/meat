@@ -1,4 +1,5 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ product.name }}{% endblock %}
 
@@ -27,7 +28,9 @@
 
             {% if product.available %}
                 <p class="available">В наличии</p>
-                <a href="{% url 'add_to_cart' product.id %}" class="btn">Добавить в корзину</a>
+                <button type="button" class="btn" id="product-add-to-cart" data-product-id="{{ product.id }}">Добавить в корзину</button>
+                <p id="product-add-message" class="review-message" hidden></p>
+                <p id="product-add-error" class="review-error-message" hidden></p>
             {% else %}
                 <p class="not-available">Нет в наличии</p>
             {% endif %}
@@ -56,4 +59,9 @@
 </div>
 {% endif %}
 
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/api-client.js' %}"></script>
+<script src="{% static 'js/product-detail.js' %}"></script>
 {% endblock %}

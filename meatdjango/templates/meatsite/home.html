@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Главная{% endblock %}
@@ -83,8 +83,8 @@
         </div>
 
         <div class="card partner">
-            <img src="{% static 'img/partners/partner3.png' %}" alt="McDonald’s">
-            <span>McDonald’s</span>
+            <img src="{% static 'img/partners/partner3.png' %}" alt="McDonald's">
+            <span>McDonald's</span>
         </div>
 
         <div class="card partner">
@@ -97,57 +97,39 @@
 <section class="section" id="reviews">
     <h3>Отзывы клиентов</h3>
 
-    {% if review_submitted %}
-        <p class="review-message">Спасибо! Отзыв отправлен и появится на сайте после модерации.</p>
-    {% endif %}
+    <p class="review-message" id="reviews-success" hidden></p>
+    <p class="review-error-message" id="reviews-error" hidden></p>
 
-    {% if reviews %}
-        <div class="reviews-grid">
-            {% for review in reviews %}
-                <article class="review-card">
-                    <div class="review-meta">
-                        <strong>{{ review.name }}</strong>
-                        {% if review.city %}
-                            <span>{{ review.city }}</span>
-                        {% endif %}
-                    </div>
-                    <p class="review-rating">Оценка: {{ review.rating }}/5</p>
-                    <p class="review-text">{{ review.text }}</p>
-                </article>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p>Пока нет опубликованных отзывов. Будьте первым, кто оставит мнение о нашей продукции.</p>
-    {% endif %}
+    <div class="reviews-grid" id="home-reviews-list"></div>
+    <p id="home-reviews-empty" hidden>Пока нет опубликованных отзывов. Будьте первым, кто оставит мнение о нашей продукции.</p>
 
     <div class="review-form-wrap">
         <h4>Оставить отзыв</h4>
-        <form method="post" class="review-form">
-            {% csrf_token %}
-            {{ review_form.non_field_errors }}
-
+        <form id="home-review-form" class="review-form">
             <div class="form-row">
-                {{ review_form.name.label_tag }}
-                {{ review_form.name }}
-                {{ review_form.name.errors }}
+                <label for="review-name">Имя</label>
+                <input id="review-name" name="name" type="text" placeholder="Ваше имя" value="{{ review_author_name }}">
             </div>
 
             <div class="form-row">
-                {{ review_form.city.label_tag }}
-                {{ review_form.city }}
-                {{ review_form.city.errors }}
+                <label for="review-city">Город</label>
+                <input id="review-city" name="city" type="text" placeholder="Город (необязательно)">
             </div>
 
             <div class="form-row">
-                {{ review_form.rating.label_tag }}
-                {{ review_form.rating }}
-                {{ review_form.rating.errors }}
+                <label for="review-rating">Оценка</label>
+                <select id="review-rating" name="rating">
+                    <option value="5">5</option>
+                    <option value="4">4</option>
+                    <option value="3">3</option>
+                    <option value="2">2</option>
+                    <option value="1">1</option>
+                </select>
             </div>
 
             <div class="form-row">
-                {{ review_form.text.label_tag }}
-                {{ review_form.text }}
-                {{ review_form.text.errors }}
+                <label for="review-text">Отзыв</label>
+                <textarea id="review-text" name="text" rows="5" placeholder="Поделитесь впечатлениями"></textarea>
             </div>
 
             <button type="submit" class="btn">Отправить отзыв</button>
@@ -155,4 +137,9 @@
     </div>
 </section>
 
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/api-client.js' %}"></script>
+<script src="{% static 'js/home-reviews.js' %}"></script>
 {% endblock %}

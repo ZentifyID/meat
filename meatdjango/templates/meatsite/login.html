@@ -1,4 +1,5 @@
 ﻿{% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Вход{% endblock %}
 
@@ -6,20 +7,17 @@
 <section class="section auth-section">
     <h3>Вход в аккаунт</h3>
 
-    <form method="post" class="auth-form">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
+    <p id="login-error" class="review-error-message" hidden></p>
 
+    <form id="login-form" class="auth-form">
         <div class="form-row">
-            {{ form.username.label_tag }}
-            {{ form.username }}
-            {{ form.username.errors }}
+            <label for="login-username">Логин</label>
+            <input id="login-username" name="username" type="text" autocomplete="username" required>
         </div>
 
         <div class="form-row">
-            {{ form.password.label_tag }}
-            {{ form.password }}
-            {{ form.password.errors }}
+            <label for="login-password">Пароль</label>
+            <input id="login-password" name="password" type="password" autocomplete="current-password" required>
         </div>
 
         <button type="submit" class="btn">Войти</button>
@@ -27,4 +25,9 @@
 
     <p class="auth-note">Нет аккаунта? <a href="{% url 'register' %}">Зарегистрируйтесь</a></p>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/api-client.js' %}"></script>
+<script src="{% static 'js/auth-login.js' %}"></script>
 {% endblock %}

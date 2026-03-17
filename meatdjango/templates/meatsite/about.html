@@ -1,4 +1,5 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
+{% load static %}
 
 {% block title %}О компании{% endblock %}
 
@@ -20,7 +21,6 @@
     </p>
 </section>
 
-
 <section class="section">
     <h3>Наша миссия</h3>
 
@@ -29,7 +29,6 @@
         высоким стандартам безопасности и вкуса.
     </p>
 </section>
-
 
 <section class="section">
     <h3>Наше производство</h3>
@@ -46,12 +45,10 @@
     </p>
 </section>
 
-
 <section class="section">
     <h3>Почему выбирают нас</h3>
 
     <div class="features">
-
         <div class="card">
             <h4>Натуральное сырьё</h4>
             <p>Мы используем только качественное мясное сырьё и проверенные ингредиенты.</p>
@@ -71,41 +68,20 @@
             <h4>Надёжные поставки</h4>
             <p>Стабильно обеспечиваем партнёров и магазины нашей продукцией.</p>
         </div>
-
     </div>
-
 </section>
 
 <section class="section">
     <h3>Новости компании</h3>
 
-    {% if news_items %}
-        <div class="news-grid">
-            {% for item in news_items %}
-                <article class="news-card">
-                    {% if item.image %}
-                        <img src="{{ item.image.url }}" alt="{{ item.title }}" class="news-image">
-                    {% endif %}
-                    <h4>{{ item.title }}</h4>
-                    {% if item.short_description %}
-                        <p>{{ item.short_description }}</p>
-                    {% else %}
-                        <p>{{ item.content|truncatewords:35 }}</p>
-                    {% endif %}
-                    <p class="news-date">
-                        {% if item.published_at %}
-                            {{ item.published_at|date:"d.m.Y" }}
-                        {% else %}
-                            {{ item.created_at|date:"d.m.Y" }}
-                        {% endif %}
-                    </p>
-                    <a href="{{ item.get_absolute_url }}" class="btn news-read-more">Читать полностью</a>
-                </article>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p>Новости пока не добавлены.</p>
-    {% endif %}
+    <div class="news-grid" id="about-news-list"></div>
+    <p id="about-news-empty" hidden>Новости пока не добавлены.</p>
+    <p id="about-news-error" class="review-error-message" hidden></p>
 </section>
 
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/api-client.js' %}"></script>
+<script src="{% static 'js/about-news.js' %}"></script>
 {% endblock %}

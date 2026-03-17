@@ -1,5 +1,4 @@
-﻿from django.contrib.auth import views as auth_views
-from django.urls import path
+﻿from django.urls import path
 
 from . import views
 
@@ -9,22 +8,24 @@ urlpatterns = [
     path("news/<int:news_id>/", views.news_detail, name="news_detail"),
     path("contacts/", views.contacts, name="contacts"),
     path("register/", views.register, name="register"),
-    path(
-        "login/",
-        auth_views.LoginView.as_view(template_name="meatsite/login.html"),
-        name="login",
-    ),
-    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path("login/", views.login_page, name="login"),
     path("profile/", views.profile, name="profile"),
     path("products/", views.products, name="products"),
     path("products/<slug:slug>/", views.product_detail, name="product_detail"),
     path("cart/", views.cart_detail, name="cart_detail"),
-    path("cart/add/<int:product_id>/", views.add_to_cart, name="add_to_cart"),
-    path("cart/increase/<int:product_id>/", views.cart_increase, name="cart_increase"),
-    path("cart/decrease/<int:product_id>/", views.cart_decrease, name="cart_decrease"),
-    path("cart/remove/<int:product_id>/", views.remove_from_cart, name="remove_from_cart"),
     path("checkout/", views.checkout, name="checkout"),
     path("order-success/", views.order_success, name="order_success"),
+    path("api/auth/session/", views.api_auth_session, name="api_auth_session"),
+    path("api/auth/register/", views.api_auth_register, name="api_auth_register"),
+    path("api/auth/login/", views.api_auth_login, name="api_auth_login"),
+    path("api/auth/logout/", views.api_auth_logout, name="api_auth_logout"),
+    path("api/reviews/", views.api_reviews, name="api_reviews"),
+    path("api/news/", views.api_news, name="api_news"),
+    path("api/news/<int:news_id>/", views.api_news_detail, name="api_news_detail"),
+    path("api/profile/", views.api_profile, name="api_profile"),
+    path("api/profile/orders/", views.api_profile_orders, name="api_profile_orders"),
+    path("api/profile/reviews/", views.api_profile_reviews, name="api_profile_reviews"),
+    path("api/profile/reviews/<int:review_id>/", views.api_profile_delete_review, name="api_profile_delete_review"),
     path("api/categories/", views.api_categories, name="api_categories"),
     path("api/products/", views.api_products, name="api_products"),
     path("api/cart/", views.api_cart_detail, name="api_cart_detail"),

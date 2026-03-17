@@ -41,7 +41,9 @@
 
         if (!response.ok) {
             const message = data && data.error ? data.error : 'API request failed';
-            throw new Error(message);
+            const error = new Error(message);
+            error.data = data;
+            throw error;
         }
 
         return data;
