@@ -2,6 +2,61 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse
+from django.utils.text import slugify
+
+
+RU_TO_EN_MAP = {
+    "а": "a",
+    "б": "b",
+    "в": "v",
+    "г": "g",
+    "д": "d",
+    "е": "e",
+    "ё": "yo",
+    "ж": "zh",
+    "з": "z",
+    "и": "i",
+    "й": "y",
+    "к": "k",
+    "л": "l",
+    "м": "m",
+    "н": "n",
+    "о": "o",
+    "п": "p",
+    "р": "r",
+    "с": "s",
+    "т": "t",
+    "у": "u",
+    "ф": "f",
+    "х": "kh",
+    "ц": "ts",
+    "ч": "ch",
+    "ш": "sh",
+    "щ": "shch",
+    "ъ": "",
+    "ы": "y",
+    "ь": "",
+    "э": "e",
+    "ю": "yu",
+    "я": "ya",
+}
+
+
+def _transliterate_ru_to_en(value):
+    return "".join(RU_TO_EN_MAP.get(char, char) for char in str(value).lower())
+
+
+def _generate_unique_slug(instance, source_value):
+    transliterated = _transliterate_ru_to_en(source_value)
+    base_slug = slugify(transliterated, allow_unicode=False) or "item"
+    slug = base_slug
+    suffix = 2
+
+    while instance.__class__.objects.filter(slug=slug).exclude(pk=instance.pk).exists():
+        slug = f"{base_slug}-{suffix}"
+        suffix += 1
+
+    return slug
 
 
 class Category(models.Model):
@@ -10,6 +65,10 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.slug = _generate_unique_slug(self, self.name)
+        super().save(*args, **kwargs)
 
 
 class Product(models.Model):
@@ -32,6 +91,10 @@ class Product(models.Model):
 
     def get_absolute_url(self):
         return reverse("product_detail", kwargs={"slug": self.slug})
+
+    def save(self, *args, **kwargs):
+        self.slug = _generate_unique_slug(self, self.name)
+        super().save(*args, **kwargs)
 
 
 class Order(models.Model):

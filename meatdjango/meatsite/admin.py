@@ -9,6 +9,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ("name", "category", "price", "available")
     list_filter = ("available", "category")
     search_fields = ("name", "description")
+    prepopulated_fields = {"slug": ("name",)}
 
 
 @admin.register(Category)
