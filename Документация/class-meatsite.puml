@@ -1,0 +1,85 @@
+@startuml
+title Class Diagram - MeatSite Models
+
+hide circle
+skinparam classAttributeIconSize 0
+
+class User {
+  +id: int
+  +username: str
+  +email: str
+}
+
+class Category {
+  +id: int
+  +name: str
+  +slug: str
+}
+
+class Product {
+  +id: int
+  +name: str
+  +slug: str
+  +description: text
+  +price: decimal
+  +image: image
+  +available: bool
+  +get_absolute_url()
+}
+
+class Order {
+  +id: int
+  +full_name: str
+  +phone: str
+  +email: str?
+  +address: text
+  +created_at: datetime
+  +is_paid: bool
+  +status: processing|delivery|completed|canceled
+  +get_total_price()
+  +status_css_class
+}
+
+class OrderItem {
+  +id: int
+  +quantity: int
+  +get_total_price()
+}
+
+class Review {
+  +id: int
+  +name: str
+  +city: str
+  +rating: 1..5
+  +text: text
+  +created_at: datetime
+  +is_published: bool
+}
+
+class News {
+  +id: int
+  +title: str
+  +short_description: str
+  +content: text
+  +image: image
+  +created_at: datetime
+  +published_at: datetime?
+  +is_published: bool
+  +get_absolute_url()
+}
+
+Category "1" <-- "0..*" Product : category
+User "0..1" <-- "0..*" Order : user
+Order "1" <-- "1..*" OrderItem : order
+Product "1" <-- "0..*" OrderItem : product
+User "0..1" <-- "0..*" Review : user
+
+note right of Order
+  status:
+  - processing
+  - delivery
+  - completed
+  - canceled
+end note
+
+@enduml

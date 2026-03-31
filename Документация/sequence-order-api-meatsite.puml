@@ -1,0 +1,40 @@
+@startuml
+title Sequence - Оформление заказа через API (/api/orders/)
+
+actor "Пользователь" as Client
+participant "Frontend JS\n(checkout.js)" as FE
+participant "Django View\napi_create_order" as API
+participant "Session Cart\nrequest.session['cart']" as Cart
+participant "Product ORM" as ProductORM
+participant "Order ORM" as OrderORM
+participant "OrderItem ORM" as ItemORM
+
+Client -> FE : Нажимает "Оформить заказ"
+FE -> API : POST /api/orders/\n{full_name, phone, email, address}
+
+API -> Cart : _build_cart_payload()
+Cart --> API : items, total_price, total_count
+
+alt Корзина пуста
+  API --> FE : 400 {"error":"Корзина пуста"}
+else Корзина не пуста
+  API -> API : Валидация JSON и обязательных полей
+  alt Ошибка валидации
+    API --> FE : 400 {"error":"Заполните обязательные поля"}
+  else Данные валидны
+    API -> OrderORM : Order.objects.create(...)
+    OrderORM --> API : order(id)
+
+    loop Для каждого товара в корзине
+      API -> ProductORM : Проверка product_id
+      ProductORM --> API : product
+      API -> ItemORM : OrderItem.objects.create(order, product_id, quantity)
+    end
+
+    API -> Cart : request.session["cart"] = {}
+    API --> FE : 201 {"message":"Заказ оформлен",\n"order_id", "redirect_url"}
+    FE -> Client : Переход на /order-success/
+  end
+end
+
+@enduml

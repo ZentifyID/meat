@@ -1,0 +1,56 @@
+@startuml
+title Use Case - MeatSite (реальный проект)
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Гость" as Guest
+actor "Авторизованный пользователь" as User
+actor "Администратор" as Admin
+
+rectangle "MeatSite (Django + API)" {
+  usecase "Просмотр главной,\nо нас, контактов" as UC_Static
+  usecase "Просмотр новостей" as UC_News
+  usecase "Просмотр товаров\nи карточки товара" as UC_Products
+  usecase "Фильтрация по категории\nи поиск по названию" as UC_Filter
+  usecase "Регистрация / вход / выход" as UC_Auth
+  usecase "Работа с корзиной\n(add/update/remove)" as UC_Cart
+  usecase "Оформление заказа" as UC_Checkout
+  usecase "Просмотр профиля" as UC_Profile
+  usecase "Просмотр истории заказов" as UC_Orders
+  usecase "Создание отзыва" as UC_ReviewCreate
+  usecase "Удаление своего отзыва" as UC_ReviewDelete
+  usecase "Модерация отзывов\nи новостей" as UC_Moderation
+  usecase "Управление каталогом\n(категории/товары)" as UC_CatalogAdmin
+}
+
+Guest --> UC_Static
+Guest --> UC_News
+Guest --> UC_Products
+Guest --> UC_Filter
+Guest --> UC_Auth
+Guest --> UC_Cart
+Guest --> UC_Checkout
+Guest --> UC_ReviewCreate
+
+User --> UC_Static
+User --> UC_News
+User --> UC_Products
+User --> UC_Filter
+User --> UC_Auth
+User --> UC_Cart
+User --> UC_Checkout
+User --> UC_Profile
+User --> UC_Orders
+User --> UC_ReviewCreate
+User --> UC_ReviewDelete
+
+Admin --> UC_Moderation
+Admin --> UC_CatalogAdmin
+
+UC_Products .> UC_Filter : <<include>>
+UC_Checkout .> UC_Cart : <<include>>
+UC_Orders .> UC_Profile : <<extend>>
+UC_ReviewDelete .> UC_Profile : <<include>>
+
+@enduml
