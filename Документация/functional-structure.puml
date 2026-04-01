@@ -1,0 +1,34 @@
+@startuml
+title Функциональная структура сайта "Производство мясопродуктов"
+
+left to right direction
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam rectangle {
+  BackgroundColor #2F9E44
+  BorderColor #1B5E20
+  FontColor white
+}
+
+rectangle "Функциональная структура\nсайта \"Производство мясопродуктов\"" as Core
+rectangle "Управление\nкаталогом товаров" as Catalog
+rectangle "Поиск товаров\nпо названию" as Search
+rectangle "Фильтрация товаров\nпо категориям" as Filter
+rectangle "Регистрация и\nавторизация пользователей" as Auth
+rectangle "Корзина и\nоформление заказов" as Orders
+rectangle "Личный кабинет\nи история заказов" as Profile
+rectangle "Отзывы и\nмодерация отзывов" as Reviews
+rectangle "Публикация новостей\nи управление контентом" as News
+
+Core -down-> Catalog
+Core -down-> Search
+Core -down-> Filter
+Core -down-> Auth
+Core -down-> Orders
+Core -down-> Profile
+Core -down-> Reviews
+Core -down-> News
+
+@enduml
